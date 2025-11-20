@@ -6,6 +6,28 @@
 #define MAX_PATH_LEN 32768
 #define MAX_CMD_LEN 32768
 
+// Hide console window as early as possible to prevent flash in GUI mode
+// This runs before main() via compiler-specific mechanisms
+#ifdef _MSC_VER
+    // MSVC: Use #pragma to run at startup
+    #pragma section(".CRT$XCU", read)
+    static void hideConsoleEarly(void) {
+        HWND consoleWnd = GetConsoleWindow();
+        if (consoleWnd) {
+            ShowWindow(consoleWnd, SW_HIDE);
+        }
+    }
+    __declspec(allocate(".CRT$XCU")) void (*hideConsoleEarlyPtr)(void) = hideConsoleEarly;
+#else
+    // GCC/MinGW: Use constructor attribute
+    __attribute__((constructor)) void hideConsoleEarly() {
+        HWND consoleWnd = GetConsoleWindow();
+        if (consoleWnd) {
+            ShowWindow(consoleWnd, SW_HIDE);
+        }
+    }
+#endif
+
 /**
  * Custom Java/JavaW Launcher
  *

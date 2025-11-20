@@ -12,10 +12,12 @@ A lightweight Windows executable that intelligently chooses between `java.exe` a
 
 ## Building
 
+A pre-built `jarrunner.exe` is included in the repository. If you need to rebuild:
+
 ### Option 1: MinGW GCC (Recommended)
 
 ```batch
-test-scripts\build-mingw.bat
+build-mingw.bat
 ```
 
 Requirements:
@@ -24,7 +26,7 @@ Requirements:
 ### Option 2: Microsoft Visual C++
 
 ```batch
-test-scripts\build-msvc.bat
+build-msvc.bat
 ```
 
 Requirements:
@@ -98,8 +100,11 @@ jarrunner.exe --java-home="C:\Program Files\Java\jdk-21" myapp.jar
 
 - **Language**: C (Windows API)
 - **Size**: ~15-20 KB (with optimization and stripping)
-- **Subsystem**: Windows (not console, to enable GUI detection)
-- **Dependencies**: kernel32.dll, user32.dll (standard Windows libraries)
+- **Subsystem**: Console (with early console hiding for GUI mode)
+- **Dependencies**: kernel32.dll, user32.lib (standard Windows libraries)
+- **Behavior**:
+  - Console mode: Waits for Java process, returns exit code
+  - GUI mode: Launches Java and exits immediately
 
 ## Error Handling
 
@@ -109,7 +114,9 @@ The launcher provides clear error messages for:
 - Missing JAR file argument
 - Process creation failures
 
-All errors are shown via `MessageBox` for visibility in both console and GUI contexts.
+Errors are displayed appropriately:
+- **Console mode**: Printed to terminal with `[ERROR]` or `[INFO]` tags
+- **GUI mode**: Shown via `MessageBox` dialog
 
 ## License
 
