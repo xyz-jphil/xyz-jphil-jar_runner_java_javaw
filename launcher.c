@@ -491,6 +491,19 @@ void getExeBaseName(char* baseName, size_t size) {
     }
 }
 
+// Get the executable's full path (without .exe extension)
+// This is used for finding the .jrc config file in the same directory as the .exe
+void getExeFullPathWithoutExt(char* fullPath, size_t size) {
+    GetModuleFileNameA(NULL, fullPath, size);
+    fullPath[size - 1] = '\0';
+
+    // Remove .exe extension
+    char* dotPos = strrchr(fullPath, '.');
+    if (dotPos && _stricmp(dotPos, ".exe") == 0) {
+        *dotPos = '\0';
+    }
+}
+
 // Function to parse --java-home argument
 char* extractJavaHome(const char* cmdLine) {
     const char* javaHomeArg = strstr(cmdLine, "--java-home=");
@@ -631,11 +644,12 @@ int main(int argc, char** argv) {
     initTimer();
     long long startTimeMicros = getElapsedMicros();
 
-    // Get executable base name (without .exe)
+    // Get executable base name (without .exe) - for display purposes
     getExeBaseName(exeBaseName, sizeof(exeBaseName));
 
-    // Build config file path
-    snprintf(configPath, sizeof(configPath), "%s.jrc", exeBaseName);
+    // Build config file path - use full path so it works from any directory
+    getExeFullPathWithoutExt(configPath, sizeof(configPath));
+    strncat(configPath, ".jrc", sizeof(configPath) - strlen(configPath) - 1);
 
     // Try to load config file
     useConfig = parseConfigFile(configPath, &config);
